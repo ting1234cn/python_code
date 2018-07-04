@@ -12,7 +12,7 @@ time_steps=15
 num_units=128
 n_hidden = 128
 #rows of 28 pixels
-n_input=14
+n_input=13
 #learning rate for adam
 learning_rate=0.001
 #mnist is meant to be classified in 10 classes(0-9).
@@ -38,12 +38,11 @@ def gen_data(filename):
     print("scaled x_seq",x_seq)
     y_hat=dataset[:,0]
     print("y_hat",y_hat)
- #   print("Y_hat",y_hat)
     # tensorflow的输入必须array必须是n*n（2*2或者3*3），即行和列数必须一致
     for i in range(len(x_seq)-time_steps):
         feature=np.asarray([x_seq[i+j] for j in range(time_steps)])
         train_x.append(feature)
-        #label=np.asarray(y_hat[i+time_steps])
+
     train_y=y_hat[time_steps:len(x_seq),np.newaxis].tolist()
  #   train_y.append(label)
 
@@ -84,10 +83,10 @@ with tf.Session() as sess:
     sess.run(init)
     iter=1
     steps=1
+    #saver.restore(sess,"./model.ckpt")
 
     while iter < len(feature)-time_steps:
-#        batch_x, batch_y = mnist.train.next_batch(batch_size=batch_size)
- #       batch_x = batch_x.reshape((batch_size, time_steps, n_input))
+
         batch_x=feature[iter:iter+batch_size]
         batch_y=label[iter:iter+batch_size]
 
@@ -98,15 +97,16 @@ with tf.Session() as sess:
             #acc = sess.run(accuracy, feed_dict={x: batch_x, y: batch_y})
             #sess.run(tf.Print(y,[y],"y value is"))
             los = sess.run(loss, feed_dict={x: batch_x, y: batch_y})
-            saver.save(sess,"../model.ckpt")
-           # predict_value=sess.run(prediction,feed_dict={x: batch_x, y: batch_y})
-           # print("prediction",predict_value)
-           # print("target",batch_y)
+            saver.save(sess,"./model.ckpt")
+
             print("For step ", steps)
             #print("Accuracy ", acc)
             print("Loss ", los)
             print("__________________")
             if los < 0.00001:
+                predict_value=sess.run(prediction,feed_dict={x: batch_x, y: batch_y})
+                print("prediction",predict_value)
+                print("target",batch_y)
                 break
         iter = iter + 1
         steps=steps+1
