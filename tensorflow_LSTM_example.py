@@ -7,7 +7,7 @@ import numpy as np
 from tensorflow.python import debug as tf_debug
 #define constants
 #unrolled through 28 time steps
-time_steps=25
+time_steps=15
 #hidden LSTM units
 num_units=128
 n_hidden = 128
@@ -18,7 +18,7 @@ learning_rate=0.001
 #mnist is meant to be classified in 10 classes(0-9).
 n_classes=1
 #size of batch
-batch_size=30
+batch_size=15
 #weights and biases of appropriate shape to accomplish above task
 out_weights=tf.Variable(tf.random_normal([num_units,n_classes]))
 out_bias=tf.Variable(tf.random_normal([n_classes]))
@@ -27,7 +27,7 @@ out_bias=tf.Variable(tf.random_normal([n_classes]))
 x=tf.placeholder("float",shape=[None,time_steps,n_input])
 #input label placeholder
 y=tf.placeholder("float",shape=[None,n_classes])
-
+writer = tf.summary.FileWriter(r'C:\Users\twan\tf', tf.get_default_graph())
 
 
 
@@ -68,41 +68,59 @@ outputs,_=rnn.static_rnn(lstm_layer,input,dtype="float32")
 prediction=tf.matmul(outputs[-1],out_weights)+out_bias
 
 #loss_function
-loss=tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=prediction,labels=y))
+#loss=tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(logits=prediction,labels=y))
+loss=tf.reduce_mean(tf.square(prediction-y))
 #optimization
 opt=tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(loss)
 #model evaluation
-correct_prediction=tf.equal(tf.argmax(prediction,1),tf.argmax(y,1))
-accuracy=tf.reduce_mean(tf.cast(correct_prediction,tf.float32))
+#correct_prediction=tf.equal(tf.argmax(prediction,1),tf.argmax(y,1))
+#accuracy=tf.reduce_mean(tf.cast(correct_prediction,tf.float32))
 
 #initialize variables
 init=tf.global_variables_initializer()
+saver=tf.train.Saver()
 with tf.Session() as sess:
-   # sess = tf_debug.LocalCLIDebugWrapperSession(sess=sess)
+  #  sess = tf_debug.LocalCLIDebugWrapperSession(sess=sess)
     sess.run(init)
     iter=1
+    steps=1
 
-    while iter < 10:
+    while iter < len(feature)-time_steps:
 #        batch_x, batch_y = mnist.train.next_batch(batch_size=batch_size)
  #       batch_x = batch_x.reshape((batch_size, time_steps, n_input))
-        batch_x=feature[(iter-1)*batch_size:iter*batch_size]
-        batch_y=label[(iter-1)*batch_size:iter*batch_size]
+        batch_x=feature[iter:iter+batch_size]
+        batch_y=label[iter:iter+batch_size]
 
 
         sess.run(opt, feed_dict={x: batch_x, y: batch_y})
-        if iter % 2 == 0:
-            acc = sess.run(accuracy, feed_dict={x: batch_x, y: batch_y})
+
+        if steps % 1000 == 0:
+            #acc = sess.run(accuracy, feed_dict={x: batch_x, y: batch_y})
+            #sess.run(tf.Print(y,[y],"y value is"))
             los = sess.run(loss, feed_dict={x: batch_x, y: batch_y})
-            print("For iter ", iter)
-            print("Accuracy ", acc)
+            saver.save(sess,"../model.ckpt")
+           # predict_value=sess.run(prediction,feed_dict={x: batch_x, y: batch_y})
+           # print("prediction",predict_value)
+           # print("target",batch_y)
+            print("For step ", steps)
+            #print("Accuracy ", acc)
             print("Loss ", los)
             print("__________________")
+            if los < 0.00001:
+                break
         iter = iter + 1
+        steps=steps+1
+        if iter>=len(feature)-time_steps:
+            iter=1
+
+
+
+
         #记得这一段要缩进到session里面
         #calculating test accuracy
-        #test_data = mnist.test.images[:128].reshape((-1, time_steps, n_input))
-        #test_label = mnist.test.labels[:128]
+        #test_data = feature[:128]
+        #test_label = label[:128]
         #print("Testing Accuracy:", sess.run(accuracy, feed_dict={x: test_data, y: test_label}))
 
-    writer = tf.summary.FileWriter(r'C:\Users\twan\tf', tf.get_default_graph())
+
     writer.close()
