@@ -4,6 +4,8 @@ from tensorflow.contrib import rnn
 #mnist=input_data.read_data_sets("/tmp/data/",one_hot=True)
 from sklearn import preprocessing
 import numpy as np
+import random
+import os
 from tensorflow.python import debug as tf_debug
 #define constants
 #unrolled through 28 time steps
@@ -19,6 +21,8 @@ learning_rate=0.001
 n_classes=1
 #size of batch
 batch_size=15
+stock_list=["600196","600460","600276","603993","600298"]
+stock="600276"
 #weights and biases of appropriate shape to accomplish above task
 out_weights=tf.Variable(tf.random_normal([num_units,n_classes]))
 out_bias=tf.Variable(tf.random_normal([n_classes]))
@@ -35,9 +39,9 @@ def gen_data(filename):
     train_x, train_y = [], []
     dataset=np.genfromtxt(filename, dtype=float,usecols= range(1,n_input+2), skip_header=1,autostrip=True)
     x_seq=preprocessing.scale(dataset[:,1:n_input+1])
-    print("scaled x_seq",x_seq)
+    #print("scaled x_seq",x_seq)
     y_hat=dataset[:,0]
-    print("y_hat",y_hat)
+    #print("y_hat",y_hat)
     # tensorflow的输入必须array必须是n*n（2*2或者3*3），即行和列数必须一致
     for i in range(len(x_seq)-time_steps):
         feature=np.asarray([x_seq[i+j] for j in range(time_steps)])
@@ -49,7 +53,7 @@ def gen_data(filename):
 
     return train_x, train_y
 
-feature, label = gen_data("600196.txt")
+feature, label = gen_data(stock+".txt")
 
 #processing the input tensor from [batch_size,n_steps,n_input] to "time_steps" number of [batch_size,n_input] tensors
 #input=tf.expand_dims(x,0)
@@ -83,7 +87,8 @@ with tf.Session() as sess:
     sess.run(init)
     iter=1
     steps=1
-    #saver.restore(sess,"./model.ckpt")
+    if os.path.exists("./"+stock+"model.ckpt"):
+        saver.restore(sess,"./"+stock+"model.ckpt")
 
     while iter < len(feature)-time_steps:
 
@@ -94,33 +99,23 @@ with tf.Session() as sess:
         sess.run(opt, feed_dict={x: batch_x, y: batch_y})
 
         if steps % 1000 == 0:
-            #acc = sess.run(accuracy, feed_dict={x: batch_x, y: batch_y})
             #sess.run(tf.Print(y,[y],"y value is"))
             los = sess.run(loss, feed_dict={x: batch_x, y: batch_y})
-            saver.save(sess,"./model.ckpt")
+            saver.save(sess,"./"+stock+"model.ckpt")
 
             print("For step ", steps)
-            #print("Accuracy ", acc)
             print("Loss ", los)
             print("__________________")
-            if los < 0.00001:
-                predict_value=sess.run(prediction,feed_dict={x: batch_x, y: batch_y})
-                print("prediction",predict_value)
-                print("target",batch_y)
+            if los < 0.01:
+                predict_value=sess.run(prediction,feed_dict={x: feature[len(feature)-time_steps:len(feature)], y: label[len(feature)-time_steps:len(feature)]})
+                print("prediction",predict_value[-1])
+                print("target",label[-time_steps:-1])
+
                 break
-        iter = iter + 1
+        iter = iter + random.randint(1,time_steps)
         steps=steps+1
         if iter>=len(feature)-time_steps:
             iter=1
-
-
-
-
-        #记得这一段要缩进到session里面
-        #calculating test accuracy
-        #test_data = feature[:128]
-        #test_label = label[:128]
-        #print("Testing Accuracy:", sess.run(accuracy, feed_dict={x: test_data, y: test_label}))
 
 
     writer.close()
