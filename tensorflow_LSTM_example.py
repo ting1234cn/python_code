@@ -4,6 +4,7 @@ from tensorflow.contrib import rnn
 #mnist=input_data.read_data_sets("/tmp/data/",one_hot=True)
 from sklearn import preprocessing
 import numpy as np
+import random
 from tensorflow.python import debug as tf_debug
 #define constants
 #unrolled through 28 time steps
@@ -12,7 +13,7 @@ time_steps=15
 num_units=128
 n_hidden = 128
 #rows of 28 pixels
-n_input=14
+n_input=13
 #learning rate for adam
 learning_rate=0.001
 #mnist is meant to be classified in 10 classes(0-9).
@@ -81,7 +82,10 @@ init=tf.global_variables_initializer()
 saver=tf.train.Saver()
 with tf.Session() as sess:
   #  sess = tf_debug.LocalCLIDebugWrapperSession(sess=sess)
-    sess.run(init)
+
+    #sess.run(init)
+    saver.restore(sess, "./600196model.ckpt")
+
     iter=1
     steps=1
 
@@ -98,7 +102,7 @@ with tf.Session() as sess:
             #acc = sess.run(accuracy, feed_dict={x: batch_x, y: batch_y})
             #sess.run(tf.Print(y,[y],"y value is"))
             los = sess.run(loss, feed_dict={x: batch_x, y: batch_y})
-            saver.save(sess,"../model.ckpt")
+            saver.save(sess,"./600196model.ckpt")
            # predict_value=sess.run(prediction,feed_dict={x: batch_x, y: batch_y})
            # print("prediction",predict_value)
            # print("target",batch_y)
@@ -106,9 +110,12 @@ with tf.Session() as sess:
             #print("Accuracy ", acc)
             print("Loss ", los)
             print("__________________")
-            if los < 0.00001:
+            if los < 0.01:
+                predict_value = sess.run(prediction, feed_dict={x: feature[-batch_size-1:-1], y: label[-batch_size-1:-1]})
+                print("prediction value",predict_value)
+                print("target",label[-batch_size-1:-1])
                 break
-        iter = iter + 1
+        iter = iter + random.randint(0,10)
         steps=steps+1
         if iter>=len(feature)-time_steps:
             iter=1
