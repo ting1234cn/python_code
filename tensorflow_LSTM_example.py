@@ -20,7 +20,7 @@ n_classes=1
 #size of batch
 batch_size=30
 stock_list=["600196","600460","600276","603993"]
-stock="600276"
+
 #weights and biases of appropriate shape to accomplish above task
 out_weights=tf.Variable(tf.random_normal([num_units,n_classes]))
 out_bias=tf.Variable(tf.random_normal([n_classes]))
@@ -82,12 +82,11 @@ def train(stock,new_model=False):
         sess.run(init)
         iter=1
         steps=1
-        if !new_model and os.path.exists("./"+stock+"/"+stock+"model.ckpt.meta"):
+        if new_model==False and os.path.exists("./"+stock+"/"+stock+"model.ckpt.meta"):
             saver.restore(sess,"./"+stock+"/"+stock+"model.ckpt")
 
 
-
-        while iter < len(feature) - time_steps:
+        while iter <= len(feature) - time_steps:
 
             batch_x = feature[iter:iter + batch_size]
             batch_y = label[iter:iter + batch_size]
@@ -103,7 +102,7 @@ def train(stock,new_model=False):
                 print("__________________")
                 if los < 0.001:
                     break
-            iter = random.randint(0, len(feature) - time_steps - 1)
+            iter = random.randint(0, len(feature) - time_steps)
             steps = steps + 1
 
 
@@ -112,5 +111,5 @@ def train(stock,new_model=False):
 if __name__ == '__main__':
     writer = tf.summary.FileWriter(r'C:\Users\twan\tf', tf.get_default_graph())
     for stock in stock_list:
-        train(stock,new_model=True)
+        train(stock,new_model=False)
     writer.close()
