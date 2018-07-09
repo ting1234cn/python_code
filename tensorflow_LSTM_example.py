@@ -19,7 +19,7 @@ learning_rate=0.001
 n_classes=1
 #size of batch
 batch_size=30
-stock_list=["600196","600460","600276","603993"]
+stock_list=["600196","600460","600276","603993","600177"]
 
 #weights and biases of appropriate shape to accomplish above task
 out_weights=tf.Variable(tf.random_normal([num_units,n_classes]))
@@ -33,19 +33,22 @@ y=tf.placeholder("float",shape=[None,n_classes])
 
 def gen_data(filename):
     train_x, train_y = [], []
-    dataset=np.genfromtxt(filename, dtype=float,usecols= range(1,n_input+2), skip_header=1,autostrip=True)
-    x_seq=preprocessing.scale(dataset[:,1:n_input+1])
-    #print("scaled x_seq",x_seq)
-    y_hat=dataset[:,0]
-    #print("y_hat",y_hat)
-    # tensorflow的输入必须array必须是n*n（2*2或者3*3），即行和列数必须一致
-    for i in range(len(x_seq)-time_steps):
-        feature=np.asarray([x_seq[i+j] for j in range(time_steps)])
-        train_x.append(feature)
+    if os.path.exists(filename):
+        dataset=np.genfromtxt(filename, dtype=float,usecols= range(1,n_input+2), skip_header=1,autostrip=True)
+        x_seq=preprocessing.scale(dataset[:,1:n_input+1])
+        #print("scaled x_seq",x_seq)
+        y_hat=dataset[:,0]
+        #print("y_hat",y_hat)
+        # tensorflow的输入必须array必须是n*n（2*2或者3*3），即行和列数必须一致
+        for i in range(len(x_seq)-time_steps):
+            feature=np.asarray([x_seq[i+j] for j in range(time_steps)])
+            train_x.append(feature)
 
-    train_y=y_hat[time_steps:len(x_seq),np.newaxis].tolist()
- #   train_y.append(label)
-    return train_x, train_y
+        train_y=y_hat[time_steps:len(x_seq),np.newaxis].tolist()
+        return train_x, train_y
+    else:
+        print(filename+"does not exist")
+        return
 
 
 
