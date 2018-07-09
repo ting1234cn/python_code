@@ -7,7 +7,7 @@ import os
 from tensorflow.python import debug as tf_debug
 #define constants
 #unrolled through 28 time steps
-time_steps=25
+time_steps=30
 #hidden LSTM units
 num_units=128
 n_hidden = 128
@@ -18,7 +18,7 @@ learning_rate=0.001
 #n_class is n dim output.
 n_classes=1
 #size of batch
-batch_size=25
+batch_size=30
 stock_list=["600196","600460","600276","603993"]
 stock="600276"
 #weights and biases of appropriate shape to accomplish above task
@@ -74,7 +74,7 @@ opt=tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(loss)
 init=tf.global_variables_initializer()
 saver=tf.train.Saver()
 
-def train(stock):
+def train(stock,new_model=False):
 
     feature, label = gen_data(stock+".txt")
     with tf.Session() as sess:
@@ -82,8 +82,9 @@ def train(stock):
         sess.run(init)
         iter=1
         steps=1
-        if os.path.exists("./"+stock+"/"+stock+"model.ckpt.meta"):
-             saver.restore(sess,"./"+stock+"/"+stock+"model.ckpt")
+        if !new_model and os.path.exists("./"+stock+"/"+stock+"model.ckpt.meta"):
+            saver.restore(sess,"./"+stock+"/"+stock+"model.ckpt")
+
 
 
         while iter < len(feature) - time_steps:
@@ -111,5 +112,5 @@ def train(stock):
 if __name__ == '__main__':
     writer = tf.summary.FileWriter(r'C:\Users\twan\tf', tf.get_default_graph())
     for stock in stock_list:
-        train(stock)
+        train(stock,new_model=True)
     writer.close()
