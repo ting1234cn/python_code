@@ -4,6 +4,7 @@ from sklearn import preprocessing
 import numpy as np
 import random
 import os
+import time
 from tensorflow.python import debug as tf_debug
 #define constants
 #unrolled through 28 time steps
@@ -12,14 +13,14 @@ time_steps=30
 num_units=128
 n_hidden = 128
 #rows of 28 pixels
-n_input=13
+n_input=12
 #learning rate for adam
 learning_rate=0.001
 #n_class is n dim output.
 n_classes=1
 #size of batch
 batch_size=30
-stock_list=["600196","600460","600276","603993","600177"]
+stock_list=["600196","600460","600276","603993","600177","002507","002258"]
 
 #weights and biases of appropriate shape to accomplish above task
 out_weights=tf.Variable(tf.random_normal([num_units,n_classes]))
@@ -47,10 +48,28 @@ def gen_data(filename):
         train_y=y_hat[time_steps:len(x_seq),np.newaxis].tolist()
         return train_x, train_y
     else:
-        print(filename+"does not exist")
+        print(filename+" does not exist")
         return
 
+def gen_data_from_execl(filename):
+    train_x, train_y = [], []
+    if os.path.exists(filename):
+        dataset=np.genfromtxt(filename, dtype=float,usecols= range(1,n_input+2), skip_header=1,autostrip=True)
+        dataset=np.gen
+        x_seq=preprocessing.scale(dataset[:,1:n_input+1])
+        #print("scaled x_seq",x_seq)
+        y_hat=dataset[:,0]
+        #print("y_hat",y_hat)
+        # tensorflow的输入必须array必须是n*n（2*2或者3*3），即行和列数必须一致
+        for i in range(len(x_seq)-time_steps):
+            feature=np.asarray([x_seq[i+j] for j in range(time_steps)])
+            train_x.append(feature)
 
+        train_y=y_hat[time_steps:len(x_seq),np.newaxis].tolist()
+        return train_x, train_y
+    else:
+        print(filename+" does not exist")
+        return
 
 #processing the input tensor from [batch_size,n_steps,n_input] to "time_steps" number of [batch_size,n_input] tensors
 #input=tf.expand_dims(x,0)
@@ -99,12 +118,15 @@ def train(stock,new_model=False):
                 # sess.run(tf.Print(y,[y],"y value is"))
                 los = sess.run(loss, feed_dict={x: batch_x, y: batch_y})
                 saver.save(sess, "./"+stock+"/"+stock+"model.ckpt")
-
-                print(stock+" for step ", steps)
+                localtime = time.asctime(time.localtime(time.time()))
+                print(localtime+"  "+stock+" for step ", steps)
                 print(stock+" Loss ", los)
                 print("__________________")
                 if los < 0.001:
-                    break
+                    batch_x = feature[len(feature) - time_steps:len(feature)]
+                    batch_y = label[len(feature) - time_steps:len(feature)]
+                    if sess.run(loss, feed_dict={x: batch_x, y: batch_y})<0.001:
+                        break
             iter = random.randint(0, len(feature) - time_steps)
             steps = steps + 1
 
