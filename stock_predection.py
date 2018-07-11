@@ -12,9 +12,9 @@ def predict(stock):
             return
         start=len(feature)-time_steps
         end=len(feature)
-        predict_value=sess.run(prediction,feed_dict={x: feature[start:end], y: label[start:end]})
+        predict_value=sess.run(prediction,feed_dict={x: feature[start:end]})
         print(stock+" prediction",predict_value[-1])
-        print("target",label[start:end])
+        #print("target",label[start:end])
 
 
 
