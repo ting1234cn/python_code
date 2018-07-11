@@ -6,9 +6,11 @@ import numpy as np
 import time
 year=2017
 quater=4
-stock_list=["600196","600460","600276","603993","600298","002258","002507"]
-start_date="2016-07-01"
+stock_list=["600196","600460","600276","603993","600298","600177","002258","002507"]
+start_date="2016-06-30"
 current_date=time.strftime("%F")
+
+
 def get_stock_history_tu():
     writer = pd.ExcelWriter(r"stocks.xlsx")
     for stock in stock_list :
@@ -16,8 +18,6 @@ def get_stock_history_tu():
             df=ts.sh_margin_details(start=start_date, end=current_date,symbol=stock)
         else:
             break
-
-
         df_k=ts.get_hist_data(start=start_date, end=current_date,code=stock)
         if df_k is None:
             break
@@ -49,22 +49,21 @@ def get_stock_history_wind():
         for stock in stock_list :
             if int(stock) > 600000:
                 stock_code=stock+".SH"
+                wdata = w.wsd(stock_code,
+                              "high,open,low,close,volume,mrg_long_bal,mrg_short_vol_bal,mfd_netbuyamt,pe_ttm,pb_lf,BOLL,MACD,roe_avg",
+                              start_date, current_date,
+                              "unit=1;traderType=1;BOLL_N=26;BOLL_Width=2;BOLL_IO=1;MACD_L=26;MACD_S=12;MACD_N=9;MACD_IO=1;MA_N=7;Fill=Previous;PriceAdj=F")
             else:
                 stock_code=stock+".SZ"
-            wdata = w.wsd(stock_code, "open,high,low,close,volume,mrg_long_bal,mrg_short_vol_bal,mfd_netbuyamt,pe_ttm,pb_lf,BOLL,MACD,roe_avg",
-                          start_date, current_date, "unit=1;traderType=1;BOLL_N=26;BOLL_Width=2;BOLL_IO=1;MACD_L=26;MACD_S=12;MACD_N=9;MACD_IO=1;MA_N=7;Fill=Previous;PriceAdj=F")
-            df_k=get_wind_data(wdata)
+                wdata = w.wsd(stock_code, "high,open,low,close,volume,volume,mfd_netbuyamt,mfd_netbuyamt_a,pe_ttm,BOLL,MACD,yoyeps_basic,yoy_equity,mfd_buyvol_m",
+                          start_date, current_date,
+                              "unit=1;traderType=1;BOLL_N=26;BOLL_Width=2;BOLL_IO=1;MACD_L=26;MACD_S=12;MACD_N=9;MACD_IO=1;MA_N=7;Fill=Previous;PriceAdj=F")
 
-           # wdata=w.wsd(stock_code, "mrg_long_bal,mfd_netbuyamt,mfd_inflowrate_m,roe_yearly,ocftoor,yoyeps_basic,yoyprofit",
-            #            start_date, current_date, "unit=1;Fill=Previous;traderType=1;PriceAdj=F")
-            #df = get_wind_data(wdata)
+
+            df_k=get_wind_data(wdata)
             if df_k is None:
                 break
-
-
-         #   df_merge=pd.merge(df_k,df,on='Date',right_index=True)
-            #df_merge.drop(['stockCode','securityAbbr','rqmcl','rqyl','rqchl','price_change','p_change'],axis=1,inplace=True)
-         #   df_merge.sort_values(by='Date',inplace=True)
+            df_k.to_csv(stock+".txt",sep="\t",index=False)
             df_k.to_excel(writer, stock, index=False)
         writer.save()
     else:
@@ -73,4 +72,4 @@ def get_stock_history_wind():
 
 
 if __name__ == '__main__':
-    get_stock_history_tu()
+    get_stock_history_wind()
