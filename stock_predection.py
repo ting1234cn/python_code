@@ -1,5 +1,10 @@
 from tensorflow_LSTM_example import *
 
+def predict_all():
+    writer = tf.summary.FileWriter(r'C:\Users\twan\tf', tf.get_default_graph())
+    for stock in stock_list:
+        predict(stock)
+    writer.close()
 
 def predict(stock):
     feature, label = gen_data(stock + ".txt")
@@ -19,7 +24,5 @@ def predict(stock):
 
 
 if __name__ == '__main__':
-    writer = tf.summary.FileWriter(r'C:\Users\twan\tf', tf.get_default_graph())
-    for stock in stock_list:
-        predict(stock)
-    writer.close()
+    predict_all()
+    #predict("002415")
