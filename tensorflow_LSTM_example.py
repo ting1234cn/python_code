@@ -81,6 +81,11 @@ opt = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(loss)
 init = tf.global_variables_initializer()
 saver = tf.train.Saver()
 
+def train_all(new_model=False):
+    writer = tf.summary.FileWriter(r'C:\Users\twan\tf', tf.get_default_graph())
+    for stock in stock_list:
+        train(stock, new_model=new_model)
+    writer.close()
 
 def train(stock, new_model=False):
     feature, label = gen_data(stock + ".txt")
@@ -119,7 +124,6 @@ def train(stock, new_model=False):
 
 
 if __name__ == '__main__':
-    writer = tf.summary.FileWriter(r'C:\Users\twan\tf', tf.get_default_graph())
-    for stock in stock_list:
-        train(stock, new_model=False)
-    writer.close()
+    #train_all(new_model=False)
+    train("000725")
+
