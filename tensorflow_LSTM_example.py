@@ -22,7 +22,8 @@ learning_rate = 0.001
 n_classes = 2
 # size of batch
 batch_size = 30
-stock_list = ["600196", "600460", "600276", "603993", "600177", "002507", "002258"]
+stock_list = {"600196":"复兴医药", "600460":"士兰微", "600276":"恒瑞医药", "603993":"洛阳钼业",
+              "600177":"雅戈尔", "002507":"涪陵榨菜", "002258":"利尔化学","000725":"京东方","601318":"中国平安"}
 
 # weights and biases of appropriate shape to accomplish above task
 out_weights = tf.Variable(tf.random_normal([num_units, n_classes]))
@@ -83,7 +84,7 @@ saver = tf.train.Saver()
 
 def train_all(new_model=False):
     writer = tf.summary.FileWriter(r'C:\Users\twan\tf', tf.get_default_graph())
-    for stock in stock_list:
+    for stock in stock_list.keys():
         train(stock, new_model=new_model)
     writer.close()
 
@@ -125,5 +126,5 @@ def train(stock, new_model=False):
 
 if __name__ == '__main__':
     #train_all(new_model=False)
-    train("000725")
+    train("601318")
 

@@ -1,8 +1,10 @@
 from tensorflow_LSTM_example import *
 
 def predict_all():
+    current_date = time.strftime("%F")
+    print(current_date)
     writer = tf.summary.FileWriter(r'C:\Users\twan\tf', tf.get_default_graph())
-    for stock in stock_list:
+    for stock in stock_list.keys():
         predict(stock)
     writer.close()
 
@@ -19,7 +21,7 @@ def predict(stock):
         start = len(feature) - time_steps
         end = len(feature)
         predict_value = sess.run(prediction, feed_dict={x: feature[start:end]})
-        print(stock + " prediction", predict_value[-1])
+        print(stock_list[stock] + " prediction", predict_value[-1])
         # print("target",label[start:end])
 
 
