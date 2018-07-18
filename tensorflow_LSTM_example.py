@@ -1,12 +1,11 @@
-import tensorflow as tf
-from tensorflow.contrib import rnn
-from sklearn import preprocessing
-import numpy as np
-import random
 import os
+import random
 import time
-import pandas as pd
-from tensorflow.python import debug as tf_debug
+
+import numpy as np
+import tensorflow as tf
+from sklearn import preprocessing
+from tensorflow.contrib import rnn
 
 # define constants
 # unrolled through 28 time steps
@@ -35,11 +34,14 @@ x = tf.placeholder("float", shape=[None, time_steps, n_input])
 y = tf.placeholder("float", shape=[None, n_classes])
 
 
-def gen_data(filename):
+def load_data(filename,preprocess=True):
     train_x, train_y = [], []
     if os.path.exists(filename):
         dataset = np.genfromtxt(filename, dtype=float, usecols=range(1, n_input + 2), skip_header=1, autostrip=True)
-        x_seq = preprocessing.scale(dataset[:, 1:n_input + 1])
+        if preprocess:
+            x_seq = preprocessing.scale(dataset[:, 1:n_input + 1])
+        else:
+            x_seq = dataset[:, 1:n_input + 1]
         # print("scaled x_seq",x_seq)
         y_hat = dataset[:, 0]
         # print("y_hat",y_hat)
@@ -89,7 +91,7 @@ def train_all(new_model=False):
     writer.close()
 
 def train(stock, new_model=False):
-    feature, label = gen_data(stock + ".txt")
+    feature, label = load_data(stock + ".txt")
     with tf.Session() as sess:
         #  sess = tf_debug.LocalCLIDebugWrapperSession(sess=sess)
         sess.run(init)
