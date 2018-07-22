@@ -1,4 +1,5 @@
 from tensorflow_LSTM_example import *
+import matplotlib.pyplot as plt
 
 def predict_all():
     current_date = time.strftime("%F")
@@ -9,7 +10,7 @@ def predict_all():
     writer.close()
 
 def predict(stock):
-    feature, label = gen_data(stock + ".txt")
+    feature, label = load_data(stock + ".txt")
     with tf.Session() as sess:
         #  sess = tf_debug.LocalCLIDebugWrapperSession(sess=sess)
         sess.run(init)
@@ -21,10 +22,20 @@ def predict(stock):
         start = len(feature) - time_steps
         end = len(feature)
         predict_value = sess.run(prediction, feed_dict={x: feature[start:end]})
-        print(stock_list[stock] + " prediction", predict_value[-1])
+        if stock in stock_list:
+            print(stock_list[stock] + " prediction", predict_value[-1])
+        else:
+            print(stock + " prediction ", predict_value[-1])
         # print("target",label[start:end])
+        plt.figure()
+        plt.plot(list(range(time_steps)),np.asarray(label[start:end])[:,0],color="b",label="actual")
+        plt.plot(list(range(time_steps)),predict_value[:,0],color="r",label="predict")
+     #   plt.plot(list(range(time_steps)), predict_value[:,1], color="g")
+        plt.title(stock)
+        plt.show()
+
 
 
 if __name__ == '__main__':
-    predict_all()
-    #predict("002415")
+    #predict_all()
+    predict("600177")
