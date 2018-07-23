@@ -28,8 +28,9 @@ def predict(stock):
             print(stock + " prediction ", predict_value[-1])
         # print("target",label[start:end])
         plt.figure()
-        plt.plot(list(range(time_steps)),np.asarray(label[start:end])[:,0],color="b",label="actual")
+        plt.plot(list(range(time_steps-1)),np.asarray(label[start:end-1])[:,0],color="b",label="actual")
         plt.plot(list(range(time_steps)),predict_value[:,0],color="r",label="predict")
+        plt.legend(loc="upper right")
      #   plt.plot(list(range(time_steps)), predict_value[:,1], color="g")
         plt.title(stock)
         plt.show()
@@ -38,4 +39,4 @@ def predict(stock):
 
 if __name__ == '__main__':
     #predict_all()
-    predict("600177")
+    predict("002258")

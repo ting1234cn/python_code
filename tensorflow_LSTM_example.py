@@ -17,21 +17,22 @@ n_hidden = 128
 n_input = 12
 # learning rate for adam
 learning_rate = 0.001
-# n_class is n dim output.
-n_classes = 2
+# n_output is n dim output.
+n_output = 2
 # size of batch
 batch_size = 30
 stock_list = {"600196":"复兴医药", "600460":"士兰微", "600276":"恒瑞医药", "603993":"洛阳钼业",
-              "600177":"雅戈尔", "002507":"涪陵榨菜", "002258":"利尔化学","000725":"京东方","601318":"中国平安"}
+              "600177":"雅戈尔", "002507":"涪陵榨菜", "002258":"利尔化学","000725":"京东方",
+              "601318":"中国平安","002415":"海康威视"}
 
 # weights and biases of appropriate shape to accomplish above task
-out_weights = tf.Variable(tf.random_normal([num_units, n_classes]))
-out_bias = tf.Variable(tf.random_normal([n_classes]))
+out_weights = tf.Variable(tf.random_normal([num_units, n_output]))
+out_bias = tf.Variable(tf.random_normal([n_output]))
 # defining placeholders
 # input image placeholder
 x = tf.placeholder("float", shape=[None, time_steps, n_input])
 # input label placeholder
-y = tf.placeholder("float", shape=[None, n_classes])
+y = tf.placeholder("float", shape=[None, n_output])
 
 
 def load_data(filename,preprocess=True):
@@ -49,10 +50,12 @@ def load_data(filename,preprocess=True):
         for i in range(len(x_seq) - time_steps):
             feature = np.asarray([x_seq[i + j] for j in range(time_steps)])
             train_x.append(feature)
-            if n_classes == 0:
+            if i== len(x_seq)- time_steps-1:
+                break
+            if n_output == 0:
                 train_y = y_hat[time_steps:len(x_seq), np.newaxis].tolist()
             else:
-                label = np.asarray([y_hat[time_steps - 1 + i + j] for j in range(n_classes)])
+                label = np.asarray([y_hat[time_steps + i + j] for j in range(n_output)])
                 train_y.append(label)
         return train_x, train_y
     else:
@@ -91,7 +94,7 @@ def train_all(new_model=False):
     writer.close()
 
 def train(stock, new_model=False):
-    feature, label = load_data(stock + ".txt")
+    feature, label = load_data(stock + ".txt",preprocess=True)
     with tf.Session() as sess:
         #  sess = tf_debug.LocalCLIDebugWrapperSession(sess=sess)
         sess.run(init)
@@ -117,16 +120,16 @@ def train(stock, new_model=False):
                 if los < 0.00001:
                     break
                 if los < 0.001:
-                    batch_x = feature[len(feature) - time_steps:len(feature)]
-                    batch_y = label[len(feature) - time_steps:len(feature)]
+                    batch_x = feature[len(feature) - time_steps-1:len(feature)-1]
+                    batch_y = label[len(feature) - time_steps-1:len(feature)-1]
                     if sess.run(loss, feed_dict={x: batch_x, y: batch_y}) < 0.001:
                         break
             if steps % 100 == 0:
-                iter = random.randint(0, len(feature) - time_steps - n_classes)
+                iter = random.randint(0, len(feature) - time_steps - n_output-1)
             steps = steps + 1
 
 
 if __name__ == '__main__':
-    #train_all(new_model=False)
-    train("601318")
+    train_all(new_model=False)
+    #train("002258")
 
