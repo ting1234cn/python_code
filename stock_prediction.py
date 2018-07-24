@@ -39,6 +39,7 @@ def predict(stock,show_annotation=False):
         if show_annotation==True:
             for xy1 in zip(range(time_steps),predict_value[:,0] ):  # 标注数据
                 plt.annotate("%.2f" % xy1[1], xy=xy1, xytext=(-1, 5), textcoords='offset points', color='r')
+        plt.savefig(fname=stock)
         plt.show()
 
 
