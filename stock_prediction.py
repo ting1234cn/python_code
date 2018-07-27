@@ -11,8 +11,8 @@ def predict_all():
         predict(stock)
     writer.close()
 
-def predict(stock,show_annotation=False):
-    feature, label = load_data(stock + ".txt")
+def predict(stock,show_pic=True,show_annotation=False):
+    feature, label = load_data(stock + ".txt",preprocess=True)
     with tf.Session() as sess:
         #  sess = tf_debug.LocalCLIDebugWrapperSession(sess=sess)
         sess.run(init)
@@ -29,18 +29,21 @@ def predict(stock,show_annotation=False):
         else:
             print(stock + " prediction ", predict_value[-1])
         # print("target",label[start:end])
-        plt.figure(int(stock))
-        plt.plot(list(range(time_steps-1)),np.asarray(label[start:end-1])[:,0],color="b",label="actual",marker="*")
-        plt.plot(list(range(time_steps)),predict_value[:,0],color="r",label="predict",marker="o")
-        plt.legend(loc="upper right")
-        plt.ylabel("high price")
-        #plt.plot(list(range(time_steps)), predict_value[:,1],label="predict2", color="g")
-        plt.title(stock+stock_list[stock],fontproperties="SimHei")
-        if show_annotation==True:
-            for xy1 in zip(range(time_steps),predict_value[:,0] ):  # 标注数据
-                plt.annotate("%.2f" % xy1[1], xy=xy1, xytext=(-1, 5), textcoords='offset points', color='r')
-        plt.savefig(fname=stock)
-        plt.show()
+        if show_pic:
+            plt.figure(int(stock))
+            plt.plot(list(range(time_steps-1)),np.asarray(label[start:end-1])[:,1],color="g",label="actual",marker=">")
+            plt.plot(list(range(time_steps)),predict_value[:,0],color="r",label="predict",marker="o")
+            plt.legend(loc="upper right")
+            plt.ylabel("high price")
+            #plt.plot(list(range(time_steps)), predict_value[:,1],label="predict2", color="g")
+            plt.title(stock+stock_list[stock],fontproperties="SimHei")
+            if show_annotation==True:
+                for xy1 in zip(range(time_steps),predict_value[:,0] ):  # 标注数据
+                    plt.annotate("%.2f" % xy1[1], xy=xy1, xytext=(-1, 5), textcoords='offset points', color='r')
+
+            plt.text(time_steps,predict_value[-1,0] ,str(predict_value[-1,0]))
+            plt.savefig(fname=stock)
+            plt.show()
 
 
 
