@@ -31,7 +31,10 @@ def predict(stock,show_pic=True,show_annotation=False):
         # print("target",label[start:end])
         if show_pic:
             plt.figure(int(stock))
-            plt.plot(list(range(time_steps-1)),np.asarray(label[start:end-1])[:,1],color="g",label="actual",marker=">")
+            label.append([label[end-n_output-1][1],0])
+            y=np.asarray(label[start:end-n_output+1])[:,0]
+
+            plt.plot(list(range(len(y))),y,color="g",label="actual",marker=">")
             plt.plot(list(range(time_steps)),predict_value[:,0],color="r",label="predict",marker="o")
             plt.legend(loc="upper right")
             plt.ylabel("high price")

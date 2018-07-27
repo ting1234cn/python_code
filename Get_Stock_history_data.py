@@ -1,14 +1,20 @@
+import time
+
 import pandas as pd
 import tushare as ts
 from WindPy import w
-from datetime import *
-import numpy as np
-import time
+
 year=2017
 quater=4
-stock_list=["600196","600460","600276","603993","600298","600177","002258","002507","002415","601318"]
+stock_list=["600196","600460","600276","603993","600298","600177","002258","002507","002415","601318","000725","601318","002415"]
 start_date="2016-06-30"
-current_date=time.strftime("%F")
+
+current_hour=time.strftime("%H", time.localtime())
+if int(current_hour)>15 :   #下午4点以后才能去当天的数据
+    current_date=time.strftime("%F")
+else:                        #否则取前一天的日期
+    current_date=time.strftime("%Y-%m-%d", time.localtime(time.time( )-86400))
+
 
 
 def get_stock_history_tu():
@@ -63,6 +69,10 @@ def get_stock_history_wind():
             df_k=get_wind_data(wdata)
             if df_k is None:
                 break
+            df_k.plot()
+
+
+
             df_k.to_csv(stock+".txt",sep="\t",index=False)
             df_k.to_excel(writer, stock, index=False)
         writer.save()

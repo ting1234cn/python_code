@@ -41,17 +41,19 @@ def load_data(filename,preprocess=True):
         dataset = np.genfromtxt(filename, dtype=float, usecols=range(1, n_input + 2), skip_header=1, autostrip=True)
         if preprocess:
             x_seq = preprocessing.scale(dataset[:, 1:n_input + 1])
+
         else:
             x_seq = dataset[:, 1:n_input + 1]
         # print("scaled x_seq",x_seq)
         y_hat = dataset[:, 0]
         # print("y_hat",y_hat)
         # tensorflow的输入必须array必须是n*n（2*2或者3*3），即行和列数必须一致
-        for i in range(len(x_seq) - time_steps):
+        for i in range(len(x_seq) - time_steps+1):
             feature = np.asarray([x_seq[i + j] for j in range(time_steps)])
             train_x.append(feature)
-            if i== len(x_seq)- time_steps-1:
-                break
+
+            if i> len(x_seq)- time_steps-n_output:
+                continue
             if n_output == 0:
                 train_y = y_hat[time_steps:len(x_seq), np.newaxis].tolist()
             else:
@@ -112,16 +114,18 @@ def train(stock, new_model=False):
             if steps % 1000 == 0:
                 # sess.run(tf.Print(y,[y],"y value is"))
                 los = sess.run(loss, feed_dict={x: batch_x, y: batch_y})
-                saver.save(sess, "./" + stock + "/" + stock + "model.ckpt")
+                if saver.save(sess, "./" + stock + "/" + stock + "model.ckpt")==None :
+                    print(stock+"model save error")
+
                 localtime = time.asctime(time.localtime(time.time()))
                 print(localtime + "  " + stock + " for step ", steps)
                 print(stock + " Loss ", los)
                 print("__________________")
                 if los < 0.00001:
                     break
-                if los < 0.001:
-                    batch_x = feature[len(feature) - time_steps-1:len(feature)-1]
-                    batch_y = label[len(feature) - time_steps-1:len(feature)-1]
+                if los < 0.0001:
+                    batch_x = feature[len(feature) - time_steps-n_output:len(feature)-n_output]
+                    batch_y = label[len(feature) - time_steps-n_output:len(feature)-n_output]
                     if sess.run(loss, feed_dict={x: batch_x, y: batch_y}) < 0.001:
                         break
             if steps % 100 == 0:
@@ -130,6 +134,6 @@ def train(stock, new_model=False):
 
 
 if __name__ == '__main__':
-    train_all(new_model=False)
-    #train("002258")
+    #train_all(new_model=False)
+    train("600177")
 
