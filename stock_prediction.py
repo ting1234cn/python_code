@@ -30,7 +30,7 @@ def predict(stock,show_pic=True,show_annotation=False):
             print(stock + " prediction ", predict_value[-1])
         # print("target",label[start:end])
         if show_pic:
-            plt.figure(int(stock))
+            plt.figure(stock)
             label.append([label[end-n_output-1][1],0])
             y=np.asarray(label[start:end-n_output+1])[:,0]
 
