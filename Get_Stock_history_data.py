@@ -60,13 +60,18 @@ def get_stock_history_wind():
                               start_date, current_date,
                               "unit=1;traderType=1;BOLL_N=26;BOLL_Width=2;BOLL_IO=1;MACD_L=26;MACD_S=12;MACD_N=9;MACD_IO=1;MA_N=7;Fill=Previous;PriceAdj=F")
             else:
+                #深圳没有融资余额数据，所以查询语句与上海不一样
                 stock_code=stock+".SZ"
                 wdata = w.wsd(stock_code, "high,open,low,close,volume,volume,mfd_netbuyamt,mfd_netbuyamt_a,pe_ttm,BOLL,MACD,yoyeps_basic,yoy_equity,mfd_buyvol_m",
                           start_date, current_date,
                               "unit=1;traderType=1;BOLL_N=26;BOLL_Width=2;BOLL_IO=1;MACD_L=26;MACD_S=12;MACD_N=9;MACD_IO=1;MA_N=7;Fill=Previous;PriceAdj=F")
 
-
+            wdata1 = w.wsd(stock_code,
+                           "tech_revs5,tech_revs10,tech_turnoverratevolatility20,tech_turnoverrate5,tech_bullpower,tech_ad6",
+                           start_date, current_date, "Fill=Previous;PriceAdj=F")
             df_k=get_wind_data(wdata)
+            df_k1=get_wind_data(wdata1)
+            df_k=pd.merge(df_k,df_k1)
             if df_k is None:
                 break
             df_k.plot()

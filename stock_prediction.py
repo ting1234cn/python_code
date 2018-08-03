@@ -12,7 +12,7 @@ def predict_all():
     writer.close()
 
 def predict(stock,show_pic=True,show_annotation=False):
-    feature, label = load_data(stock + ".txt",preprocess=True)
+    feature, label,date_index = load_data(stock + ".txt",preprocess=True)
     with tf.Session() as sess:
         #  sess = tf_debug.LocalCLIDebugWrapperSession(sess=sess)
         sess.run(init)
@@ -36,8 +36,10 @@ def predict(stock,show_pic=True,show_annotation=False):
 
             plt.plot(list(range(len(y))),y,color="g",label="actual",marker=">")
             plt.plot(list(range(time_steps)),predict_value[:,0],color="r",label="predict",marker="o")
+            #plt.plot(list(date_index[start:end-n_output+2]), predict_value[:, 0], color="r", label="predict", marker="o")
             plt.legend(loc="upper right")
             plt.ylabel("high price")
+            #plt.xticks(list(date_index[start:end-n_output+2]))
             #plt.plot(list(range(time_steps)), predict_value[:,1],label="predict2", color="g")
             plt.title(stock+stock_list[stock],fontproperties="SimHei")
             if show_annotation==True:
@@ -52,4 +54,4 @@ def predict(stock,show_pic=True,show_annotation=False):
 
 if __name__ == '__main__':
     predict_all()
-    #predict("002258")
+    #predict("600177")
