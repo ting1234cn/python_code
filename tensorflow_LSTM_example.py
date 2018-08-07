@@ -80,10 +80,18 @@ input = tf.unstack(x, axis=1)
 # 这里原文写的是n_hidden，其实不应当！应该把n_hidden改为num_units
 # 或者在前面再定义一个n_hidden = 128
 
-lstm_layer = rnn.BasicLSTMCell(n_hidden, forget_bias=1)
-lstm_layer = rnn.DropoutWrapper(cell=lstm_layer, input_keep_prob=1.0, output_keep_prob=1.0)
-mlstm_layer = rnn.MultiRNNCell([lstm_layer] * layer_num, state_is_tuple=True)
-outputs, _ = rnn.static_rnn(lstm_layer, input, dtype="float32")
+
+
+def get_a_cell():
+    #返回第一层LSTM, Tensorflow1.2以上要求这样实现
+    lstm_layer = rnn.BasicLSTMCell(n_hidden, forget_bias=1)
+    lstm_layer = rnn.DropoutWrapper(cell=lstm_layer, input_keep_prob=1.0, output_keep_prob=1.0)
+    return lstm_layer
+
+mlstm_layer = rnn.MultiRNNCell([get_a_cell() for _ in range(layer_num)], state_is_tuple=True)
+
+outputs, _ = rnn.static_rnn(mlstm_layer, input, dtype="float32")
+
 
 # converting last output of dimension [batch_size,num_units] to [batch_size,n_classes] by out_weight multiplication
 prediction = tf.matmul(outputs[-1], out_weights) + out_bias
@@ -91,6 +99,8 @@ prediction = tf.matmul(outputs[-1], out_weights) + out_bias
 # loss_function
 # loss=tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(logits=prediction,labels=y))
 loss = tf.reduce_mean(tf.square(prediction - y))
+
+accuracy = tf.reduce_mean(prediction-y)
 # optimization
 opt = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(loss)
 
@@ -102,7 +112,7 @@ def train_all(new_model=False):
     writer = tf.summary.FileWriter(r'C:\Users\twan\tf', tf.get_default_graph())
     for stock in stock_list.keys():
         train(stock, new_model=new_model)
-        time.sleep(1)
+        time.sleep(1)  #避免存储model失败
     writer.close()
 
 def train(stock, new_model=False):
@@ -115,7 +125,7 @@ def train(stock, new_model=False):
         if new_model == False and os.path.exists("./" + stock + "/" + stock + "model.ckpt.meta"):
             saver.restore(sess, "./" + stock + "/" + stock + "model.ckpt")
         los_list=[]
-        plt.ion()
+        plt.ion()   #设置交互模式，动态更新图片
         plt.ylabel("loss")
         while iter <= len(feature) - time_steps:
 
@@ -126,13 +136,16 @@ def train(stock, new_model=False):
             if steps % 1000 == 0:
                 # sess.run(tf.Print(y,[y],"y value is"))
                 los = sess.run(loss, feed_dict={x: batch_x, y: batch_y})
+                acc =sess.run(accuracy,feed_dict={x: batch_x, y: batch_y})
+
                 los_list.append(los)
+
 
                 plt.clf()
                 plt.plot(los_list)
                 #plt.show()
                 #plt.draw()
-                plt.pause(0.1)
+                plt.pause(1)  #这一步是必须的，图片在pause中更新
 
                 if saver.save(sess, "./" + stock + "/" + stock + "model.ckpt")==None :
                     print(stock+"model save error")
@@ -140,6 +153,7 @@ def train(stock, new_model=False):
                 localtime = time.asctime(time.localtime(time.time()))
                 print(localtime + "  " + stock + " for step ", steps)
                 print(stock + " Loss ", los)
+                print("accuracy",acc)
                 print("__________________")
                 if los < 0.00001:
                     break
@@ -156,5 +170,5 @@ def train(stock, new_model=False):
 
 if __name__ == '__main__':
     #train_all(new_model=True)
-    train("002415",new_model=False)
+    train("600460",new_model=True)
 
