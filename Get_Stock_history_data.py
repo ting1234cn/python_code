@@ -42,6 +42,8 @@ def get_wind_data(wdata):
     df["Date"]=wdata.Times
     for field in wdata.Fields:
         df[field] = wdata.Data[i]
+        if field in ["HIGH","OPEN","LOW","CLOSE"]:
+            df[field]=df[field].round(2)
         i = i + 1
 
     return df
@@ -71,10 +73,11 @@ def get_stock_history_wind():
                            start_date, current_date, "Fill=Previous;PriceAdj=F")
             df_k=get_wind_data(wdata)
             df_k1=get_wind_data(wdata1)
+
             df_k=pd.merge(df_k,df_k1)
             if df_k is None:
                 break
-            df_k.plot()
+            #df_k.plot()
 
 
 
