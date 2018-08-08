@@ -1,3 +1,2 @@
 model_checkpoint_path: "600460model.ckpt"
-all_model_checkpoint_paths: "..\\600196\\600196model.ckpt"
 all_model_checkpoint_paths: "600460model.ckpt"

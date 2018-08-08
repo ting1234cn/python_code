@@ -1,2 +1,6 @@
 model_checkpoint_path: "002258model.ckpt"
+all_model_checkpoint_paths: "..\\600276\\600276model.ckpt"
+all_model_checkpoint_paths: "..\\603993\\603993model.ckpt"
+all_model_checkpoint_paths: "..\\600177\\600177model.ckpt"
+all_model_checkpoint_paths: "..\\002507\\002507model.ckpt"
 all_model_checkpoint_paths: "002258model.ckpt"
